@@ -10,11 +10,13 @@ Aplicação de gerenciamento de tarefas com Node.js (backend) e React (frontend)
 
 ## 📋 Funcionalidades
 
+- ✅ Autenticação de usuários (login e cadastro)
 - ✅ Criar novas tarefas
 - ✅ Marcar tarefas como concluídas
 - ✅ Deletar tarefas
 - ✅ Visualizar estatísticas das tarefas
 - ✅ Interface responsiva com tema claro/escuro
+- ✅ Tarefas isoladas por usuário
 
 ## 🛠️ Instalação e Execução
 
@@ -40,8 +42,14 @@ A aplicação estará disponível em `http://localhost:5173`
 
 ## 🌐 API Endpoints
 
-- `GET /api/tasks` - Lista todas as tarefas
-- `GET /api/tasks/:id` - Busca uma tarefa específica
+### Autenticação
+- `POST /api/auth/register` - Registra um novo usuário
+- `POST /api/auth/login` - Faz login de um usuário
+- `GET /api/auth/me` - Retorna informações do usuário autenticado
+
+### Tarefas (rotas protegidas)
+- `GET /api/tasks` - Lista todas as tarefas do usuário autenticado
+- `GET /api/tasks/:id` - Busca uma tarefa específica do usuário
 - `POST /api/tasks` - Cria uma nova tarefa
 - `PUT /api/tasks/:id` - Atualiza uma tarefa
 - `DELETE /api/tasks/:id` - Deleta uma tarefa
@@ -70,6 +78,8 @@ A interface permite gerenciar tarefas de forma simples e intuitiva, com suporte 
 ### Backend
 - `express` - Framework web
 - `cors` - Middleware para CORS
+- `jsonwebtoken` - Autenticação JWT
+- `bcryptjs` - Hash de senhas
 - `nodemon` - Auto-reload durante desenvolvimento
 
 ### Frontend

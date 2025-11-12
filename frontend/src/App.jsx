@@ -1,24 +1,58 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
+import Auth from './Auth'
 
 const API_URL = 'http://localhost:3001/api/tasks';
 
 function App() {
+  const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({ title: '', description: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch tasks from backend
+  // Check if user is already logged in
   useEffect(() => {
-    fetchTasks();
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        // Invalid stored user data, clear it
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
   }, []);
 
-  const fetchTasks = async () => {
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setTasks([]);
+  }, []);
+
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error('Erro ao carregar tarefas');
+      const token = localStorage.getItem('token');
+      const response = await fetch(API_URL, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          handleLogout();
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error('Erro ao carregar tarefas');
+      }
+      
       const data = await response.json();
       setTasks(data);
       setError(null);
@@ -27,19 +61,38 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [handleLogout]);
+
+  // Fetch tasks from backend when user is logged in
+  useEffect(() => {
+    if (user) {
+      fetchTasks();
+    }
+  }, [user, fetchTasks]);
 
   const addTask = async (e) => {
     e.preventDefault();
     if (!newTask.title.trim()) return;
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(newTask),
       });
-      if (!response.ok) throw new Error('Erro ao criar tarefa');
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          handleLogout();
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error('Erro ao criar tarefa');
+      }
+      
       const data = await response.json();
       setTasks([...tasks, data]);
       setNewTask({ title: '', description: '' });
@@ -50,12 +103,24 @@ function App() {
 
   const toggleTask = async (id, completed) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ completed: !completed }),
       });
-      if (!response.ok) throw new Error('Erro ao atualizar tarefa');
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          handleLogout();
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error('Erro ao atualizar tarefa');
+      }
+      
       const data = await response.json();
       setTasks(tasks.map(task => task.id === id ? data : task));
     } catch (err) {
@@ -65,21 +130,52 @@ function App() {
 
   const deleteTask = async (id) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
-      if (!response.ok) throw new Error('Erro ao deletar tarefa');
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          handleLogout();
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        throw new Error('Erro ao deletar tarefa');
+      }
+      
       setTasks(tasks.filter(task => task.id !== id));
     } catch (err) {
       setError(err.message);
     }
   };
 
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  // Show auth screen if user is not logged in
+  if (!user) {
+    return <Auth onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app">
       <div className="container">
-        <h1>📝 Tasky</h1>
-        <p className="subtitle">Gerenciador de Tarefas</p>
+        <div className="header">
+          <div>
+            <h1>📝 Tasky</h1>
+            <p className="subtitle">Gerenciador de Tarefas</p>
+          </div>
+          <div className="user-info">
+            <span className="username">👤 {user.username}</span>
+            <button onClick={handleLogout} className="btn-logout">
+              Sair
+            </button>
+          </div>
+        </div>
 
         {error && (
           <div className="error">

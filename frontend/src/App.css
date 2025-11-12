@@ -11,6 +11,18 @@
   max-width: 600px;
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.header > div:first-child {
+  flex: 1;
+}
+
 h1 {
   font-size: 3rem;
   margin-bottom: 0.5rem;
@@ -19,7 +31,34 @@ h1 {
 
 .subtitle {
   color: #888;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.username {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.btn-logout {
+  padding: 0.5rem 1rem;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+
+.btn-logout:hover {
+  background-color: #555;
 }
 
 .error {
@@ -199,5 +238,35 @@ h1 {
 
   .stats {
     border-color: #ddd;
+  }
+
+  .username {
+    color: #666;
+  }
+
+  .btn-logout {
+    background-color: #e0e0e0;
+    color: #213547;
+  }
+
+  .btn-logout:hover {
+    background-color: #d0d0d0;
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-info {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  h1 {
+    font-size: 2rem;
   }
 }

@@ -1,20 +1,20 @@
 import crypto from 'crypto';
 
-// Simple hash function for passwords (for demo purposes)
-// WARNING: SHA-256 is not sufficient for password hashing in production
-// In production, use bcrypt, argon2, or scrypt with proper salt and iterations
-// This is acceptable for a local demo app with JSON storage
+// Função simples de hash para senhas (apenas para fins de demonstração)
+// AVISO: SHA-256 não é suficiente para hash de senhas em produção
+// Em produção, use bcrypt, argon2 ou scrypt com salt e iterações apropriadas
+// Isso é aceitável para uma aplicação de demonstração local com armazenamento JSON
 export const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-// Generate a simple session token
+// Gera um token de sessão simples
 export const generateToken = () => {
   return crypto.randomBytes(32).toString('hex');
 };
 
-// Simple in-memory session store
-// In production, use Redis or similar
+// Armazenamento de sessão simples em memória
+// Em produção, use Redis ou similar
 const sessions = new Map();
 
 export const createSession = (userId) => {
@@ -31,7 +31,7 @@ export const deleteSession = (token) => {
   sessions.delete(token);
 };
 
-// Middleware to authenticate requests
+// Middleware para autenticar requisições
 export const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   

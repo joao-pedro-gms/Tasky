@@ -29,7 +29,7 @@ function Auth({ onLogin }) {
         throw new Error(data.error || 'Erro ao processar requisição');
       }
 
-      // Store token in localStorage
+      // Armazena o token no localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       

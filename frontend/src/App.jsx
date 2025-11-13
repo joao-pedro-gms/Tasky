@@ -17,8 +17,10 @@ function App() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState(null);
 
-  // Check for existing token on mount
+  // Verifica por token existente ao montar o componente
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
@@ -32,7 +34,7 @@ function App() {
     }
   }, []);
 
-  // Fetch tasks when authenticated
+  // Busca tarefas quando autenticado
   useEffect(() => {
     if (isAuthenticated && token) {
       fetchTasks();
@@ -74,12 +76,60 @@ function App() {
     setTasks([]);
   };
 
+  // Função para obter sugestões de melhoria usando IA
+  const getSuggestions = async () => {
+    if (!newTask.name.trim()) {
+      setError('Digite um título para obter sugestões');
+      return;
+    }
+
+    try {
+      setLoadingSuggestions(true);
+      setError(null);
+      const response = await fetch(`${API_URL}/suggest-improvements`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: newTask.name,
+          description: newTask.description
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao obter sugestões');
+      }
+      
+      const data = await response.json();
+      setSuggestions(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // Função para aplicar sugestões
+  const applySuggestions = () => {
+    if (suggestions) {
+      setNewTask({
+        ...newTask,
+        name: suggestions.suggestedTitle,
+        description: suggestions.suggestedDescription
+      });
+      setSuggestions(null);
+    }
+  };
+
   const addTask = async (e) => {
     e.preventDefault();
     if (!newTask.name.trim()) return;
 
     try {
-      // Parse tags from comma-separated string
+      // Converte tags de string separada por vírgulas para array
       const tagsArray = newTask.tags
         ? newTask.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
         : [];
@@ -101,6 +151,7 @@ function App() {
       const data = await response.json();
       setTasks([...tasks, data]);
       setNewTask({ name: '', description: '', deadline: '', tags: '' });
+      setSuggestions(null);
     } catch (err) {
       setError(err.message);
     }
@@ -194,8 +245,49 @@ function App() {
             onChange={(e) => setNewTask({ ...newTask, tags: e.target.value })}
             className="input"
           />
-          <button type="submit" className="btn-add">Adicionar Tarefa</button>
+          <div className="form-actions">
+            <button type="submit" className="btn-add">Adicionar Tarefa</button>
+            <button 
+              type="button" 
+              onClick={getSuggestions} 
+              className="btn-suggest"
+              disabled={loadingSuggestions}
+            >
+              {loadingSuggestions ? '🤔 Pensando...' : '✨ Sugerir Melhorias (IA)'}
+            </button>
+          </div>
         </form>
+
+        {/* Painel de sugestões */}
+        {suggestions && (
+          <div className="suggestions-panel">
+            <h3>💡 Sugestões de Melhoria</h3>
+            <div className="suggestion-item">
+              <strong>Título sugerido:</strong>
+              <p>{suggestions.suggestedTitle}</p>
+            </div>
+            <div className="suggestion-item">
+              <strong>Descrição sugerida:</strong>
+              <p>{suggestions.suggestedDescription}</p>
+            </div>
+            <div className="suggestion-item">
+              <strong>Melhorias aplicadas:</strong>
+              <ul>
+                {suggestions.improvements?.map((improvement, index) => (
+                  <li key={index}>{improvement}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="suggestion-actions">
+              <button onClick={applySuggestions} className="btn-apply">
+                Aplicar Sugestões
+              </button>
+              <button onClick={() => setSuggestions(null)} className="btn-dismiss">
+                Dispensar
+              </button>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="loading">Carregando tarefas...</div>

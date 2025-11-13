@@ -83,6 +83,11 @@ h1 {
   margin-bottom: 2rem;
 }
 
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
 .input {
   padding: 0.75rem;
   border: 1px solid #444;
@@ -107,10 +112,112 @@ h1 {
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.25s;
+  flex: 1;
 }
 
 .btn-add:hover {
   background-color: #535bf2;
+}
+
+.btn-suggest {
+  padding: 0.75rem;
+  background-color: #ff9500;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.25s;
+  flex: 1;
+}
+
+.btn-suggest:hover:not(:disabled) {
+  background-color: #ff8000;
+}
+
+.btn-suggest:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.suggestions-panel {
+  background-color: #1a1a1a;
+  border: 2px solid #ff9500;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.suggestions-panel h3 {
+  margin-top: 0;
+  color: #ff9500;
+  font-size: 1.2rem;
+}
+
+.suggestion-item {
+  margin-bottom: 1rem;
+}
+
+.suggestion-item strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #aaa;
+}
+
+.suggestion-item p {
+  margin: 0;
+  padding: 0.75rem;
+  background-color: #252525;
+  border-radius: 6px;
+  color: white;
+}
+
+.suggestion-item ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #ccc;
+}
+
+.suggestion-item li {
+  margin-bottom: 0.5rem;
+}
+
+.suggestion-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btn-apply {
+  padding: 0.75rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.25s;
+  flex: 1;
+}
+
+.btn-apply:hover {
+  background-color: #45a049;
+}
+
+.btn-dismiss {
+  padding: 0.75rem;
+  background-color: #666;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.25s;
+  flex: 1;
+}
+
+.btn-dismiss:hover {
+  background-color: #555;
 }
 
 .loading {
@@ -246,6 +353,20 @@ h1 {
     background-color: #f9f9f9;
     color: #213547;
     border-color: #ddd;
+  }
+
+  .suggestions-panel {
+    background-color: #f9f9f9;
+    border-color: #ff9500;
+  }
+
+  .suggestion-item p {
+    background-color: #efefef;
+    color: #213547;
+  }
+
+  .suggestion-item ul {
+    color: #333;
   }
 
   .task-item {

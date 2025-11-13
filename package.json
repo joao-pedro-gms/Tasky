@@ -1,0 +1,74 @@
+{
+  "name": "tasky-desktop",
+  "version": "1.0.0",
+  "description": "Tasky - Aplicação de Gerenciamento de Tarefas para Desktop Windows",
+  "main": "electron-main.js",
+  "type": "module",
+  "scripts": {
+    "postinstall": "cd backend && npm install && cd ../frontend && npm install && cd ..",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "electron:dev": "electron .",
+    "build:frontend": "cd frontend && ELECTRON_BUILD=true npm run build && cd ..",
+    "build:backend": "npm install --prefix backend",
+    "build:electron": "npm run build:frontend && npm run build:backend && electron-builder --win --x64",
+    "build:electron:portable": "npm run build:frontend && npm run build:backend && electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "com.tasky.desktop",
+    "productName": "Tasky",
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "files": [
+      "electron-main.js",
+      "electron-preload.js",
+      "dist-electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": ["**/*", "!data"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-${os}-${arch}-portable.${ext}"
+    }
+  },
+  "keywords": [
+    "task",
+    "management",
+    "desktop",
+    "electron"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-is-dev": "^3.0.1"
+  },
+  "dependencies": {}
+}

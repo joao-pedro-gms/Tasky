@@ -7,6 +7,24 @@
 
 Aplicação de gerenciamento de tarefas com Node.js (backend) e React (frontend).
 
+## 💻 Versão Desktop para Windows
+
+**✨ NOVO!** Agora você pode usar o Tasky como uma aplicação desktop nativa do Windows! Veja o guia completo em [DESKTOP.md](DESKTOP.md).
+
+- 🪟 Instalador para Windows
+- 📦 Backend e frontend integrados em um único executável
+- 🚀 Não precisa de navegador ou servidores separados
+- ⚡ Versão portable disponível (sem instalação)
+
+**Compilar para Windows:**
+```bash
+npm install
+npm run build:electron
+```
+
+Os instaladores serão gerados na pasta `dist-desktop/`.
+
+
 ## 🚀 Tecnologias
 
 - **Backend**: Node.js + Express

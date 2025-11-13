@@ -1,23 +1,53 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import Auth from './Auth'
 
 const API_URL = 'http://localhost:3001/api/tasks';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState({ title: '', description: '' });
+  const [newTask, setNewTask] = useState({ 
+    name: '', 
+    description: '', 
+    deadline: '',
+    tags: '' 
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch tasks from backend
+  // Check for existing token on mount
   useEffect(() => {
-    fetchTasks();
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    
+    if (savedToken && savedUser) {
+      setToken(savedToken);
+      setUser(JSON.parse(savedUser));
+      setIsAuthenticated(true);
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  // Fetch tasks when authenticated
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      fetchTasks();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, token]);
 
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (!response.ok) throw new Error('Erro ao carregar tarefas');
       const data = await response.json();
       setTasks(data);
@@ -29,20 +59,48 @@ function App() {
     }
   };
 
+  const handleLogin = (authToken, authUser) => {
+    setToken(authToken);
+    setUser(authUser);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
+    setUser(null);
+    setIsAuthenticated(false);
+    setTasks([]);
+  };
+
   const addTask = async (e) => {
     e.preventDefault();
-    if (!newTask.title.trim()) return;
+    if (!newTask.name.trim()) return;
 
     try {
+      // Parse tags from comma-separated string
+      const tagsArray = newTask.tags
+        ? newTask.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+        : [];
+
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTask),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: newTask.name,
+          description: newTask.description,
+          deadline: newTask.deadline || null,
+          tags: tagsArray
+        }),
       });
       if (!response.ok) throw new Error('Erro ao criar tarefa');
       const data = await response.json();
       setTasks([...tasks, data]);
-      setNewTask({ title: '', description: '' });
+      setNewTask({ name: '', description: '', deadline: '', tags: '' });
     } catch (err) {
       setError(err.message);
     }
@@ -52,7 +110,10 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ completed: !completed }),
       });
       if (!response.ok) throw new Error('Erro ao atualizar tarefa');
@@ -67,6 +128,9 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (!response.ok) throw new Error('Erro ao deletar tarefa');
       setTasks(tasks.filter(task => task.id !== id));
@@ -75,11 +139,23 @@ function App() {
     }
   };
 
+  if (!isAuthenticated) {
+    return <Auth onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app">
       <div className="container">
-        <h1>📝 Tasky</h1>
-        <p className="subtitle">Gerenciador de Tarefas</p>
+        <div className="header">
+          <div>
+            <h1>📝 Tasky</h1>
+            <p className="subtitle">Gerenciador de Tarefas</p>
+          </div>
+          <div className="user-info">
+            <span>Olá, {user?.username}</span>
+            <button onClick={handleLogout} className="btn-logout">Sair</button>
+          </div>
+        </div>
 
         {error && (
           <div className="error">
@@ -91,16 +167,31 @@ function App() {
         <form onSubmit={addTask} className="task-form">
           <input
             type="text"
-            placeholder="Título da tarefa"
-            value={newTask.title}
-            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+            placeholder="Nome da tarefa *"
+            value={newTask.name}
+            onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
             className="input"
+            required
           />
           <input
             type="text"
             placeholder="Descrição (opcional)"
             value={newTask.description}
             onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+            className="input"
+          />
+          <input
+            type="date"
+            placeholder="Prazo (opcional)"
+            value={newTask.deadline}
+            onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+            className="input"
+          />
+          <input
+            type="text"
+            placeholder="Tags (separadas por vírgula)"
+            value={newTask.tags}
+            onChange={(e) => setNewTask({ ...newTask, tags: e.target.value })}
             className="input"
           />
           <button type="submit" className="btn-add">Adicionar Tarefa</button>
@@ -123,8 +214,25 @@ function App() {
                       className="checkbox"
                     />
                     <div className="task-text">
-                      <h3>{task.title}</h3>
-                      {task.description && <p>{task.description}</p>}
+                      <h3>{task.name}</h3>
+                      {task.description && <p className="task-description">{task.description}</p>}
+                      <div className="task-meta">
+                        {task.deadline && (
+                          <span className="task-deadline">
+                            📅 {new Date(task.deadline).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
+                        {task.tags && task.tags.length > 0 && (
+                          <div className="task-tags">
+                            {task.tags.map((tag, index) => (
+                              <span key={index} className="tag">#{tag}</span>
+                            ))}
+                          </div>
+                        )}
+                        <span className="task-created">
+                          Criado em: {new Date(task.createdAt).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <button

@@ -192,7 +192,7 @@ app.post('/api/tasks/suggest-improvements', authenticate, async (req, res) => {
   
   try {
     // Obtém o modelo Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     
     // Cria o prompt para o Gemini
     const prompt = `Você é um assistente especializado em gerenciamento de tarefas. 

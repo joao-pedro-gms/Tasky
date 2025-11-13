@@ -1,7 +1,9 @@
 import crypto from 'crypto';
 
 // Simple hash function for passwords (for demo purposes)
-// In production, use bcrypt or similar
+// WARNING: SHA-256 is not sufficient for password hashing in production
+// In production, use bcrypt, argon2, or scrypt with proper salt and iterations
+// This is acceptable for a local demo app with JSON storage
 export const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };

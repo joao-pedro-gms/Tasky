@@ -17,6 +17,7 @@ Aplicação de gerenciamento de tarefas com Node.js (backend) e React (frontend)
 
 - ✅ Autenticação de usuários (registro e login)
 - ✅ Criar novas tarefas com nome, descrição, prazo e tags
+- ✅ **✨ NOVO: Sugestões de melhoria de título e descrição usando IA (Google Gemini)**
 - ✅ Marcar tarefas como concluídas
 - ✅ Deletar tarefas
 - ✅ Visualizar estatísticas das tarefas
@@ -59,8 +60,13 @@ A aplicação estará disponível em `http://localhost:5173`
 - `POST /api/tasks` - Cria uma nova tarefa
 - `PUT /api/tasks/:id` - Atualiza uma tarefa do usuário
 - `DELETE /api/tasks/:id` - Deleta uma tarefa do usuário
+- `POST /api/tasks/suggest-improvements` - **✨ NOVO**: Gera sugestões de melhoria para título e descrição usando IA
 
 Para mais detalhes e exemplos, veja [API_EXAMPLES.md](backend/API_EXAMPLES.md)
+
+### 🤖 Configuração da IA (Gemini)
+
+Para usar o recurso de sugestões com IA, você precisa configurar uma API Key do Google Gemini. Veja o guia completo em [GEMINI_SETUP.md](backend/GEMINI_SETUP.md).
 
 ## 📝 Estrutura do Projeto
 
@@ -96,6 +102,7 @@ A interface permite gerenciar tarefas de forma simples e intuitiva, com suporte 
 ### Backend
 - `express` - Framework web
 - `cors` - Middleware para CORS
+- `@google/generative-ai` - API do Google Gemini para sugestões com IA
 - `nodemon` - Auto-reload durante desenvolvimento
 
 ### Frontend

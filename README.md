@@ -15,10 +15,13 @@ Aplicação de gerenciamento de tarefas com Node.js (backend) e React (frontend)
 
 ## 📋 Funcionalidades
 
-- ✅ Criar novas tarefas
+- ✅ Autenticação de usuários (registro e login)
+- ✅ Criar novas tarefas com nome, descrição, prazo e tags
 - ✅ Marcar tarefas como concluídas
 - ✅ Deletar tarefas
 - ✅ Visualizar estatísticas das tarefas
+- ✅ Tarefas isoladas por usuário (cada usuário vê apenas suas próprias tarefas)
+- ✅ Armazenamento persistente em JSON local
 - ✅ Interface responsiva com tema claro/escuro
 
 ## 🛠️ Instalação e Execução
@@ -45,22 +48,40 @@ A aplicação estará disponível em `http://localhost:5173`
 
 ## 🌐 API Endpoints
 
-- `GET /api/tasks` - Lista todas as tarefas
-- `GET /api/tasks/:id` - Busca uma tarefa específica
+### Autenticação
+- `POST /api/auth/register` - Registra um novo usuário
+- `POST /api/auth/login` - Faz login e retorna token de autenticação
+- `POST /api/auth/logout` - Faz logout e invalida o token
+
+### Tarefas (requer autenticação)
+- `GET /api/tasks` - Lista todas as tarefas do usuário autenticado
+- `GET /api/tasks/:id` - Busca uma tarefa específica do usuário
 - `POST /api/tasks` - Cria uma nova tarefa
-- `PUT /api/tasks/:id` - Atualiza uma tarefa
-- `DELETE /api/tasks/:id` - Deleta uma tarefa
+- `PUT /api/tasks/:id` - Atualiza uma tarefa do usuário
+- `DELETE /api/tasks/:id` - Deleta uma tarefa do usuário
+
+Para mais detalhes e exemplos, veja [API_EXAMPLES.md](backend/API_EXAMPLES.md)
 
 ## 📝 Estrutura do Projeto
 
 ```
 Tasky/
 ├── backend/           # Servidor Node.js
+│   ├── data/          # Arquivos JSON para armazenamento (gitignored)
+│   │   ├── users.json # Credenciais dos usuários
+│   │   └── tasks.json # Tarefas dos usuários
+│   ├── utils/         # Utilitários
+│   │   ├── storage.js # Funções de leitura/escrita JSON
+│   │   └── auth.js    # Autenticação e gerenciamento de sessão
 │   ├── index.js       # Arquivo principal do servidor
 │   ├── package.json   # Dependências do backend
-│   └── .env.example   # Exemplo de configuração
+│   ├── SECURITY.md    # Considerações de segurança
+│   └── API_EXAMPLES.md # Exemplos de uso da API
 ├── frontend/          # Aplicação React
 │   ├── src/           # Código fonte
+│   │   ├── App.jsx    # Componente principal com gerenciamento de tarefas
+│   │   ├── Auth.jsx   # Componente de login/registro
+│   │   └── ...        # Outros componentes
 │   ├── package.json   # Dependências do frontend
 │   └── .env.example   # Exemplo de configuração
 └── README.md          # Este arquivo
@@ -80,6 +101,41 @@ A interface permite gerenciar tarefas de forma simples e intuitiva, com suporte 
 ### Frontend
 - `react` - Biblioteca de UI
 - `vite` - Build tool e dev server
+
+## 📊 Modelo de Dados
+
+### Usuário (User)
+```json
+{
+  "id": 1,
+  "username": "user123",
+  "password": "hash_da_senha",
+  "createdAt": "2025-11-13T12:00:00.000Z"
+}
+```
+
+### Tarefa (Task)
+```json
+{
+  "id": 1,
+  "name": "Nome da tarefa",
+  "description": "Descrição detalhada",
+  "createdAt": "2025-11-13T12:00:00.000Z",
+  "deadline": "2025-12-31",
+  "tags": ["tag1", "tag2"],
+  "userId": 1,
+  "completed": false
+}
+```
+
+**Campos:**
+- `name` (string, obrigatório): Nome da tarefa
+- `description` (string, opcional): Descrição detalhada
+- `createdAt` (string, automático): Data/hora de criação (ISO 8601)
+- `deadline` (string, opcional): Prazo para conclusão (formato: YYYY-MM-DD)
+- `tags` (array, opcional): Array de tags para categorização
+- `userId` (number, automático): ID do usuário que criou a tarefa
+- `completed` (boolean, padrão: false): Status de conclusão
 
 ## 🔄 CI/CD
 
@@ -123,6 +179,16 @@ Você pode acompanhar o status de todos os workflows na [aba Actions](https://gi
 5. Abra um Pull Request
 
 Todos os pull requests passarão por verificações automáticas de CI/CD antes de serem mesclados.
+
+## 🔒 Segurança
+
+⚠️ **Importante**: Esta aplicação usa SHA-256 para hash de senhas, que é adequado apenas para fins de demonstração e desenvolvimento local. Para ambientes de produção, consulte [SECURITY.md](backend/SECURITY.md) para recomendações de segurança, incluindo:
+
+- Uso de bcrypt, argon2 ou scrypt para hashing de senhas
+- Implementação de gerenciamento de sessão com Redis
+- Configuração adequada de CORS e HTTPS
+- Rate limiting e validação de entrada
+- Proteção contra ataques comuns
 
 ## 📄 Licença
 

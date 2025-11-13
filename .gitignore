@@ -140,3 +140,14 @@ vite.config.ts.timestamp-*
 
 # Backend data directory (contains user data)
 backend/data/
+
+# Electron build artifacts
+dist-electron/
+dist-desktop/
+*.exe
+*.dmg
+*.AppImage
+*.snap
+*.deb
+*.rpm
+

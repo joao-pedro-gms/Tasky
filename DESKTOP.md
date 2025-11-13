@@ -6,6 +6,33 @@ Esta é a versão desktop do Tasky para Windows, construída com Electron.
 
 Tasky Desktop é uma versão standalone da aplicação web Tasky que roda como um aplicativo nativo do Windows. Não é necessário ter um navegador aberto ou gerenciar servidores separadamente - tudo está empacotado em um único executável.
 
+## 🚀 Início Rápido
+
+### Para Usuários (apenas usar a aplicação):
+
+1. Baixe o instalador Windows da seção de [Releases](https://github.com/joao-pedro-gms/Tasky/releases)
+2. Execute o instalador `Tasky-X.X.X-win-x64.exe`
+3. Siga as instruções de instalação
+4. Execute Tasky do menu Iniciar ou atalho na área de trabalho
+
+### Para Desenvolvedores (compilar da fonte):
+
+```bash
+# Clone o repositório
+git clone https://github.com/joao-pedro-gms/Tasky.git
+cd Tasky
+
+# Instale as dependências
+npm install
+
+# Compile a aplicação desktop
+npm run build:electron
+```
+
+Os instaladores serão criados em `dist-desktop/`.
+
+Para desenvolvimento e debugging, veja [DESKTOP_DEV_GUIDE.md](DESKTOP_DEV_GUIDE.md).
+
 ## 🚀 Como Executar em Modo de Desenvolvimento
 
 ### Pré-requisitos
@@ -125,6 +152,8 @@ Os dados da aplicação (tarefas e usuários) são armazenados localmente no dir
 - O backend pode levar alguns segundos para iniciar
 - Verifique os logs no console de desenvolvimento (F12)
 
+Para problemas mais detalhados e soluções, consulte [DESKTOP_DEV_GUIDE.md](DESKTOP_DEV_GUIDE.md).
+
 ## 🌐 Diferenças da Versão Web
 
 A versão desktop é funcionalmente idêntica à versão web, mas oferece:
@@ -132,6 +161,11 @@ A versão desktop é funcionalmente idêntica à versão web, mas oferece:
 - Não precisa de navegador aberto
 - Inicialização mais rápida
 - Melhor integração com o sistema operacional
+
+## 📖 Documentação Adicional
+
+- [DESKTOP_DEV_GUIDE.md](DESKTOP_DEV_GUIDE.md) - Guia completo de desenvolvimento
+- [README.md](README.md) - Documentação principal do projeto
 
 ## 📄 Licença
 

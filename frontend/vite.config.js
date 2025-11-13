@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   build: {
-    outDir: process.env.ELECTRON_BUILD ? '../dist-electron' : 'dist',
+    outDir: process.env.ELECTRON_BUILD === 'true' ? '../dist-electron' : 'dist',
     emptyOutDir: true,
   },
 })

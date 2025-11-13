@@ -11,6 +11,8 @@ jobs:
   build-and-prepare:
     name: Build and Prepare for Deployment
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -64,6 +66,8 @@ jobs:
   docker-build:
     name: Build Docker Images (Optional)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:

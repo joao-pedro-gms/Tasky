@@ -10,6 +10,8 @@ jobs:
   backend:
     name: Backend CI
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     strategy:
       matrix:
@@ -42,6 +44,8 @@ jobs:
   frontend:
     name: Frontend CI
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     strategy:
       matrix:

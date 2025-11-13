@@ -9,12 +9,12 @@ const DATA_DIR = path.join(__dirname, '../data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 
-// Ensure data directory exists
+// Garante que o diretório de dados existe
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Initialize files if they don't exist
+// Inicializa os arquivos se eles não existirem
 if (!fs.existsSync(USERS_FILE)) {
   fs.writeFileSync(USERS_FILE, '[]', 'utf8');
 }
@@ -23,7 +23,7 @@ if (!fs.existsSync(TASKS_FILE)) {
   fs.writeFileSync(TASKS_FILE, '[]', 'utf8');
 }
 
-// Read users from JSON file
+// Lê usuários do arquivo JSON
 export const readUsers = () => {
   try {
     const data = fs.readFileSync(USERS_FILE, 'utf8');
@@ -34,7 +34,7 @@ export const readUsers = () => {
   }
 };
 
-// Write users to JSON file
+// Escreve usuários no arquivo JSON
 export const writeUsers = (users) => {
   try {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
@@ -45,7 +45,7 @@ export const writeUsers = (users) => {
   }
 };
 
-// Read tasks from JSON file
+// Lê tarefas do arquivo JSON
 export const readTasks = () => {
   try {
     const data = fs.readFileSync(TASKS_FILE, 'utf8');
@@ -56,7 +56,7 @@ export const readTasks = () => {
   }
 };
 
-// Write tasks to JSON file
+// Escreve tarefas no arquivo JSON
 export const writeTasks = (tasks) => {
   try {
     fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2), 'utf8');

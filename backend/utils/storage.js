@@ -45,18 +45,34 @@ export const writeUsers = (users) => {
   }
 };
 
-// Lê tarefas do arquivo JSON
+// Lê tarefas do arquivo JSON como hashmap
+// Estrutura: { [userId]: { [taskId]: task } }
 export const readTasks = () => {
   try {
     const data = fs.readFileSync(TASKS_FILE, 'utf8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    // Migra dados antigos (array) para novo formato (hashmap)
+    if (Array.isArray(parsed)) {
+      const hashmap = {};
+      parsed.forEach(task => {
+        const userId = task.userId;
+        if (!hashmap[userId]) {
+          hashmap[userId] = {};
+        }
+        hashmap[userId][task.id] = task;
+      });
+      // Salva no novo formato
+      writeTasks(hashmap);
+      return hashmap;
+    }
+    return parsed;
   } catch (error) {
     console.error('Error reading tasks:', error);
-    return [];
+    return {};
   }
 };
 
-// Escreve tarefas no arquivo JSON
+// Escreve tarefas no arquivo JSON (hashmap format)
 export const writeTasks = (tasks) => {
   try {
     fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2), 'utf8');
@@ -65,4 +81,51 @@ export const writeTasks = (tasks) => {
     console.error('Error writing tasks:', error);
     return false;
   }
+};
+
+// Helper: Obtém tarefas de um usuário como array
+export const getUserTasks = (userId) => {
+  const tasks = readTasks();
+  const userTasks = tasks[userId] || {};
+  return Object.values(userTasks);
+};
+
+// Helper: Obtém uma tarefa específica
+export const getTask = (userId, taskId) => {
+  const tasks = readTasks();
+  return tasks[userId]?.[taskId] || null;
+};
+
+// Helper: Adiciona ou atualiza uma tarefa
+export const setTask = (userId, task) => {
+  const tasks = readTasks();
+  if (!tasks[userId]) {
+    tasks[userId] = {};
+  }
+  tasks[userId][task.id] = task;
+  return writeTasks(tasks);
+};
+
+// Helper: Remove uma tarefa
+export const deleteTask = (userId, taskId) => {
+  const tasks = readTasks();
+  if (tasks[userId] && tasks[userId][taskId]) {
+    delete tasks[userId][taskId];
+    return writeTasks(tasks);
+  }
+  return false;
+};
+
+// Helper: Gera próximo ID de tarefa
+export const getNextTaskId = () => {
+  const tasks = readTasks();
+  let maxId = 0;
+  Object.values(tasks).forEach(userTasks => {
+    Object.values(userTasks).forEach(task => {
+      if (task.id > maxId) {
+        maxId = task.id;
+      }
+    });
+  });
+  return maxId + 1;
 };

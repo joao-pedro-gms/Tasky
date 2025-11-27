@@ -195,11 +195,10 @@ function App() {
         }
       });
       if (!response.ok) throw new Error('Erro ao deletar tarefa');
-      // Remove task from hashmap using O(1) operation
+      // Remove task from hashmap using destructuring
       setTasksMap(prev => {
-        const updated = { ...prev };
-        delete updated[id];
-        return updated;
+        const { [id]: _, ...remaining } = prev;
+        return remaining;
       });
     } catch (err) {
       setError(err.message);

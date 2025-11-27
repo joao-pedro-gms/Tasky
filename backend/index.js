@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { readUsers, writeUsers, readTasks, writeTasks } from './utils/storage.js';
+import { readUsers, writeUsers, getUserTasks, getTask, setTask, deleteTask as removeTask, getNextTaskId } from './utils/storage.js';
 import { hashPassword, createSession, getSession, deleteSession, authenticate } from './utils/auth.js';
 
 const app = express();
@@ -89,15 +89,13 @@ app.post('/api/auth/logout', authenticate, (req, res) => {
 
 // Busca todas as tarefas (filtradas por usuário)
 app.get('/api/tasks', authenticate, (req, res) => {
-  const tasks = readTasks();
-  const userTasks = tasks.filter(t => t.userId === req.userId);
+  const userTasks = getUserTasks(req.userId);
   res.json(userTasks);
 });
 
 // Busca uma tarefa específica
 app.get('/api/tasks/:id', authenticate, (req, res) => {
-  const tasks = readTasks();
-  const task = tasks.find(t => t.id === parseInt(req.params.id) && t.userId === req.userId);
+  const task = getTask(req.userId, parseInt(req.params.id));
   
   if (!task) {
     return res.status(404).json({ error: 'Tarefa não encontrada' });
@@ -114,10 +112,8 @@ app.post('/api/tasks', authenticate, (req, res) => {
     return res.status(400).json({ error: 'O nome é obrigatório' });
   }
   
-  const tasks = readTasks();
-  
   const newTask = {
-    id: tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1,
+    id: getNextTaskId(),
     name,
     description: description || '',
     createdAt: new Date().toISOString(),
@@ -127,8 +123,7 @@ app.post('/api/tasks', authenticate, (req, res) => {
     completed: false,
   };
   
-  tasks.push(newTask);
-  writeTasks(tasks);
+  setTask(req.userId, newTask);
   
   res.status(201).json(newTask);
 });
@@ -136,41 +131,38 @@ app.post('/api/tasks', authenticate, (req, res) => {
 // Atualiza uma tarefa
 app.put('/api/tasks/:id', authenticate, (req, res) => {
   const taskId = parseInt(req.params.id);
-  const tasks = readTasks();
-  const taskIndex = tasks.findIndex(t => t.id === taskId && t.userId === req.userId);
+  const existingTask = getTask(req.userId, taskId);
   
-  if (taskIndex === -1) {
+  if (!existingTask) {
     return res.status(404).json({ error: 'Tarefa não encontrada' });
   }
   
   const { name, description, deadline, tags, completed } = req.body;
   
-  tasks[taskIndex] = {
-    ...tasks[taskIndex],
-    name: name !== undefined ? name : tasks[taskIndex].name,
-    description: description !== undefined ? description : tasks[taskIndex].description,
-    deadline: deadline !== undefined ? deadline : tasks[taskIndex].deadline,
-    tags: tags !== undefined ? tags : tasks[taskIndex].tags,
-    completed: completed !== undefined ? completed : tasks[taskIndex].completed,
+  const updatedTask = {
+    ...existingTask,
+    name: name !== undefined ? name : existingTask.name,
+    description: description !== undefined ? description : existingTask.description,
+    deadline: deadline !== undefined ? deadline : existingTask.deadline,
+    tags: tags !== undefined ? tags : existingTask.tags,
+    completed: completed !== undefined ? completed : existingTask.completed,
   };
   
-  writeTasks(tasks);
+  setTask(req.userId, updatedTask);
   
-  res.json(tasks[taskIndex]);
+  res.json(updatedTask);
 });
 
 // Deleta uma tarefa
 app.delete('/api/tasks/:id', authenticate, (req, res) => {
   const taskId = parseInt(req.params.id);
-  const tasks = readTasks();
-  const taskIndex = tasks.findIndex(t => t.id === taskId && t.userId === req.userId);
+  const existingTask = getTask(req.userId, taskId);
   
-  if (taskIndex === -1) {
+  if (!existingTask) {
     return res.status(404).json({ error: 'Tarefa não encontrada' });
   }
   
-  tasks.splice(taskIndex, 1);
-  writeTasks(tasks);
+  removeTask(req.userId, taskId);
   
   res.status(204).send();
 });

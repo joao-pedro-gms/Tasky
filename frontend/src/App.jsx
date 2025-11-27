@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import './App.css'
 import Auth from './Auth'
 
@@ -8,7 +8,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  // Tasks stored as hashmap: { [taskId]: task }
+  const [tasksMap, setTasksMap] = useState({});
   const [newTask, setNewTask] = useState({ 
     name: '', 
     description: '', 
@@ -19,6 +20,9 @@ function App() {
   const [error, setError] = useState(null);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState(null);
+
+  // Convert hashmap to array for rendering
+  const tasks = useMemo(() => Object.values(tasksMap), [tasksMap]);
 
   // Verifica por token existente ao montar o componente
   useEffect(() => {
@@ -52,7 +56,12 @@ function App() {
       });
       if (!response.ok) throw new Error('Erro ao carregar tarefas');
       const data = await response.json();
-      setTasks(data);
+      // Convert array to hashmap for O(1) lookups
+      const hashmap = {};
+      data.forEach(task => {
+        hashmap[task.id] = task;
+      });
+      setTasksMap(hashmap);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -73,7 +82,7 @@ function App() {
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
-    setTasks([]);
+    setTasksMap({});
   };
 
   // Função para obter sugestões de melhoria usando IA
@@ -149,7 +158,8 @@ function App() {
       });
       if (!response.ok) throw new Error('Erro ao criar tarefa');
       const data = await response.json();
-      setTasks([...tasks, data]);
+      // Add task to hashmap using O(1) operation
+      setTasksMap(prev => ({ ...prev, [data.id]: data }));
       setNewTask({ name: '', description: '', deadline: '', tags: '' });
       setSuggestions(null);
     } catch (err) {
@@ -169,7 +179,8 @@ function App() {
       });
       if (!response.ok) throw new Error('Erro ao atualizar tarefa');
       const data = await response.json();
-      setTasks(tasks.map(task => task.id === id ? data : task));
+      // Update task in hashmap using O(1) operation
+      setTasksMap(prev => ({ ...prev, [id]: data }));
     } catch (err) {
       setError(err.message);
     }
@@ -184,7 +195,11 @@ function App() {
         }
       });
       if (!response.ok) throw new Error('Erro ao deletar tarefa');
-      setTasks(tasks.filter(task => task.id !== id));
+      // Remove task from hashmap using destructuring
+      setTasksMap(prev => {
+        const { [id]: _, ...remaining } = prev;
+        return remaining;
+      });
     } catch (err) {
       setError(err.message);
     }
